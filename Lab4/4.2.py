@@ -1,47 +1,56 @@
+import sys
 from PySide6.QtCore import *
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtMultimedia import QSoundEffect
-from PySide6.QtCore import QUrl
 
-class step_animation_demo(QWidget):
+class Animation_area(QWidget):
     def __init__(self):
         QWidget.__init__(self, None)
-        self.setMinimumSize(320, 320)
-        
-        # Get update, update calls QTimer. self.imagest self.filename_no
-        self.imagest = 30
-        self.filename_no = 0
-        
+        self.frame_no = 0
+        self.images = []
+        for i in range(1, 21):
+            pixmap = QPixmap("images/frame_" + str(i + 1) + ".png")
+            self.images.append(pixmap)
+
         timer = QTimer(self)
         timer.timeout.connect(self.update_value)
-        timer.start(200)
-        
-        # Get play button
+        timer.start(75)
+
         self.QSE = QSoundEffect()
         self.QSE.setSource(QUrl.fromLocalFile("sounds/rabbit_jump.wav"))
-        self.QSE.setLoopCount(QSoundEffect.Infinite)
-        
+
     def paintEvent(self, e):
         p = QPainter()
         p.begin(self)
-        p.drawText(0, 30, 320, 320, 1, self.imagest.filename_no)
-        p.drawRect(0, 30, 320, 320)
-        self.imagest.drawPixmap(rect(self.filename_no))
+        p.drawPixmap(QRect(0, 0, 320, 320), self.images[self.frame_no])
         p.end()
-    
-    def update_value(self):
-        self.filename_no = self.filename_no + 1
-        if self.filename_no > self.imagest:
-            self.filename_no = 0
-        self.update()
-    
-    def closeEvent(self, e):
-        self.QSE.stop()
 
-# Layout stuff
-import sys
-app = QApplication(sys.argv)
-w = step_animation_demo()
-w.show()
-sys.exit(app.exec())
+    def update_value(self):
+        self.frame_no += 1
+        if self.frame_no >= 20:
+            self.frame_no = 0
+            self.QSE.play()
+        self.update()
+
+
+class Simple_animation_window(QWidget):
+    def __init__(self):
+        QWidget.__init__(self, None)
+        self.anim_area = Animation_area()
+        layout = QVBoxLayout()
+        layout.addWidget(self.anim_area)
+        layout.addWidget(QPushButton("Pause"))
+        self.setLayout(layout)
+        self.setMinimumSize(330, 400)
+
+
+def main():
+    app = QApplication(sys.argv)
+    w = Simple_animation_window()
+    w.show()
+    return app.exec()
+
+
+if __name__ == "__main__":
+    sys.exit(main())
