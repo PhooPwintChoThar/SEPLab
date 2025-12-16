@@ -5,6 +5,7 @@ from PySide6.QtGui import *
 from PySide6.QtMultimedia import QSoundEffect
 import random
 
+
 class Rabbit:
     def __init__(self):
         self.image = QPixmap("images/rabbit.png")
@@ -21,7 +22,9 @@ class Rabbit:
         self.y = random.randint(0, arena_h - self.h)
 
     def is_hit(self, mouse_x, mouse_y):
-        # Your code here.
+        if (self.x <= mouse_x <= self.x + self.w and
+            self.y <= mouse_y <= self.y + self.h):
+            return True
         return False
 
 
@@ -47,6 +50,7 @@ class Animation_area(QWidget):
         mouse_pos = e.position()
         x_pos = mouse_pos.x()
         y_pos = mouse_pos.y()
+
         if self.rabbit.is_hit(x_pos, y_pos):
             self.QSH.play()
         else:
