@@ -66,7 +66,6 @@ class Animation_area(QWidget):
         self.rabbit.random_pos(self.arena_w, self.arena_h)
         self.update()
 
-
 class Simple_animation_window(QWidget):
     def __init__(self):
         QWidget.__init__(self, None)
@@ -75,7 +74,6 @@ class Simple_animation_window(QWidget):
         layout.addWidget(self.anim_area)
         self.setLayout(layout)
         self.setMinimumSize(330, 400)
-
 
 def main():
     app = QApplication(sys.argv)
