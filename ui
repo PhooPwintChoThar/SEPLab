@@ -1,0 +1,128 @@
+from tkinter import *
+from datetime import date as Date
+
+# -------------------------
+# Application Layer
+# -------------------------
+
+class BookingSystem(object):
+    def __init__(self):
+        self.observers = []
+        self.bookings = {}
+
+    def addObserver(self, o):
+        self.observers.append(o)
+
+    def notifyObservers(self, data):
+        for o in self.observers:
+            o.update(data)
+
+    def addBooking(self, date, booking):
+        if date in self.bookings:
+            self.bookings[date].append(booking)
+        else:
+            self.bookings[date] = [booking]
+
+    def getBookings(self, date):
+        bookings = []
+        for k, v in self.bookings.items():
+            if k == date:
+                bookings.append((k, v))
+
+        self.notifyObservers(bookings)
+        return bookings
+
+    def display(self, date):
+        self.getBookings(date)
+
+
+class BookingObserver(object):
+    def update(self, data):
+        pass
+
+
+# -------------------------
+# UI Layer
+# -------------------------
+
+class StaffUI(BookingObserver):
+    def __init__(self, system):
+        self.system = system
+
+        # Main Window
+        self.root = Tk()
+        self.root.title("Booking List")
+
+        # Listbox to show bookings
+        self.listbox = Listbox(self.root, width=40, height=10)
+        self.listbox.pack(padx=10, pady=10)
+
+        # Select Booking Button
+        Button(self.root, text="Select Bookings...",
+               command=self.openSelectWindow).pack(pady=5)
+
+    def update(self, bookings):
+        self.listbox.delete(0, END)
+
+        if not bookings:
+            self.listbox.insert(END, "No bookings found.")
+            return
+
+        for data in bookings:
+            booking_date = data[0]
+            items = data[1]
+            for item in items:
+                self.listbox.insert(END, f"{booking_date}: {item}")
+
+    def openSelectWindow(self):
+        self.top = Toplevel(self.root)
+        self.top.title("Select Booking")
+
+        Label(self.top, text="Day").grid(row=0, column=0)
+        Label(self.top, text="Month").grid(row=1, column=0)
+        Label(self.top, text="Year").grid(row=2, column=0)
+
+        self.dayEntry = Entry(self.top)
+        self.monthEntry = Entry(self.top)
+        self.yearEntry = Entry(self.top)
+
+        self.dayEntry.grid(row=0, column=1)
+        self.monthEntry.grid(row=1, column=1)
+        self.yearEntry.grid(row=2, column=1)
+
+        Button(self.top, text="Submit",
+               command=self.submitDate).grid(row=3, columnspan=2, pady=5)
+
+    def submitDate(self):
+        try:
+            d = int(self.dayEntry.get())
+            m = int(self.monthEntry.get())
+            y = int(self.yearEntry.get())
+
+            selected_date = Date(y, m, d)
+            self.system.display(selected_date)
+
+            self.top.destroy()
+        except:
+            print("Invalid Date")
+
+    def run(self):
+        self.root.mainloop()
+
+
+# -------------------------
+# Testing Data
+# -------------------------
+
+s = BookingSystem()
+
+s.addBooking(Date(2011, 9, 1), "Booking#1")
+s.addBooking(Date(2011, 10, 1), "Booking#2")
+s.addBooking(Date(2011, 10, 1), "Booking#3")
+s.addBooking(Date(2011, 11, 1), "Booking#4")
+s.addBooking(Date(2011, 12, 1), "Booking#5")
+
+ui = StaffUI(s)
+s.addObserver(ui)
+
+ui.run()
